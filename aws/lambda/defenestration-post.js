@@ -1,6 +1,5 @@
 /*
-  AWS lambda function. Recieves event via AWS gateway. Generates a random
-  map and returns to caller.
+  Post to the game server. Return a stringified
 */
 
 'use strict';
@@ -26,11 +25,38 @@ exports.handler = (event, context, callback) => {
         "Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
         "Access-Control-Allow-Credentials": true
     },
-  "body" : generateMap(15, 15)
+  "body" : generateRound(4)
 }
 
    callback(null, response);
 };
+
+function generateRound(numTurns){
+    var round = {
+        maps : generateMaps(numTurns),
+        actors : generateActors(numTurns)
+    }
+    return round;
+}
+
+function generateMaps(numTurns){
+    var maps = [];
+    for (var i = 0; i < numTurns; i++){
+        maps.push(generateMap(15,15));
+    }
+    return maps;
+}
+
+function generateActors(numTurns){
+    var actors = [];
+    for (var i = 0; i < numTurns; i++){
+        actors.push({
+            "xPos" : i,
+            "yPos" : i
+        })
+    }
+    return actors;
+}
 
 function generateMap(xSize, ySize){
   return {
