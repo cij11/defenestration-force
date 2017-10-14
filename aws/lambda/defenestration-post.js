@@ -1,5 +1,6 @@
 /*
-  Post to the game server. Return a stringified
+  AWS lambda function. Recieves event via AWS gateway. Generates a random
+  map and returns to caller.
 */
 
 'use strict';
@@ -25,8 +26,33 @@ exports.handler = (event, context, callback) => {
         "Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
         "Access-Control-Allow-Credentials": true
     },
-  "body" : jsonWrapper
+  "body" : generateMap(15, 15)
 }
 
    callback(null, response);
 };
+
+function generateMap(xSize, ySize){
+  return {
+    "map" : {
+        "rows" : generateRows(xSize, ySize)
+    }
+  }
+}
+
+function generateRows(xSize, ySize){
+    var rows = [];
+    for(var j = 0; j < ySize; j++ ){
+        var row = "";
+        for(var i = 0; i < xSize; i++){
+            row = row + selectRandomTile();
+        }
+        rows.push(row);
+
+    }
+    return rows;
+}
+
+function selectRandomTile(){
+ return Math.random() < 0.2 ? "#" : ".";
+}
