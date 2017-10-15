@@ -33,37 +33,39 @@ exports.handler = (event, context, callback) => {
 
 function generateRound(numTurns){
     var round = {
-        maps : generateMaps(numTurns),
-        actors : generateActors(numTurns)
+        turns : generateTurns(numTurns)
     }
     return round;
 }
 
-function generateMaps(numTurns){
-    var maps = [];
-    for (var i = 0; i < numTurns; i++){
-        maps.push(generateMap(15,15));
+function generateTurns(numTurns){
+    var turns = [];
+    for(var i = 0; i < numTurns; i++){
+        var turn = {
+            map : generateMap(15, 15),
+            actors : generateActors(3, i)
+        }
+        turns.push(turn);
     }
-    return maps;
+    return turns;
 }
 
-function generateActors(numTurns){
+function generateActors(numActors, turnNum){
     var actors = [];
-    for (var i = 0; i < numTurns; i++){
-        actors.push({
+    for (var i = 0; i < numActors; i++){
+        var actor = {
             "xPos" : i,
-            "yPos" : i
-        })
+            "yPos" : turnNum
+        }
+        actors.push(actor);
     }
     return actors;
 }
 
 function generateMap(xSize, ySize){
-  return {
-    "map" : {
+  return  {
         "rows" : generateRows(xSize, ySize)
     }
-  }
 }
 
 function generateRows(xSize, ySize){

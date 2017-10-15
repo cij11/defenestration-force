@@ -29,6 +29,11 @@ heroImage.src = "images/hero.png";
 
 var tileSize = 32;
 
+//Time until update to the next frame
+var turnTime = 1000;
+//Time to shift an actor between two tiles
+var interpolationPeriod = 20;
+
 $.ajax({
   type: 'POST',
   url: "https://g6arya4tcf.execute-api.ap-southeast-1.amazonaws.com/prod",
@@ -44,8 +49,6 @@ $.ajax({
   console.log(data);
 
   playbackRound(data);
-  //  renderMap(data.body.map);
-  renderObjects();
 });
 
 //A round is an array of turns. Each turn holds the state of the map and players
@@ -57,19 +60,31 @@ function playbackRound(data) {
 }
 
 function playbackTurn(currentTurn, data) {
-  if (currentTurn >= data.body.maps.length) {
+  if (currentTurn >= data.body.turns.length-1) {
     return;
   }
-  console.log(data.body.maps[currentTurn]);
-  renderMap(data.body.maps[currentTurn].map);
+  renderFrame(data.body.turns[currentTurn].map, data.body.turns[currentTurn].actors, data.body.turns[currentTurn+1].actors, 0);
 
   //Advance to the next map in one second
   setTimeout(function() {playbackTurn(currentTurn + 1, data)}, 1000);
 }
 
+function renderFrame(map, actorsBegin, actorsEnd, interpolationCounter){
+  if (interpolationCounter >= interpolationPeriod) return;
+
+  //Rerender the map to stop actor trails
+  renderMap(map);
+
+  var u = interpolationCounter/interpolationPeriod;
+  var v = 1 - u;
+
+  for (var i = 0; i < actorsBegin.length; i++){
+    renderActor(actorsBegin[i], actorsEnd[i], u, v);
+  }
+  setTimeout(function(){renderFrame(map, actorsBegin, actorsEnd, interpolationCounter+1)});
+}
+
 function renderMap(map) {
-  console.log(map);
-  console.log(map.rows);
   for (var j = 0; j < map.rows.length; j++) {
     for (var i = 0; i < map.rows[j].length; i++) {
       var tile = map.rows[j][i];
@@ -82,6 +97,8 @@ function renderMap(map) {
   }
 }
 
-function renderObjects() {
-  ctx.drawImage(heroImage, 3 * tileSize, 3 * tileSize);
+function renderActor(actorBegin, actorEnd, u, v){
+  var x = actorBegin.xPos * v + actorEnd.xPos * u;
+  var y = actorBegin.yPos * v + actorEnd.yPos * u;
+  ctx.drawImage(heroImage, x * tileSize, y * tileSize);
 }
